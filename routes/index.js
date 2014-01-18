@@ -1,12 +1,16 @@
 var phantom = require('phantom');
-var ph;
 var fs = require('fs');
+var ph;
 
 var id = 0;
 //Iterate over images and increase id based on max
 fs.readdir('./images/', function (err, files) { if (err) throw err;
   files.forEach( function (file) {
-    id = parseInt(file.split(".")[0]) + 1;
+    var val = parseInt(file.split(".")[0]);
+    if(!isNaN(val))
+    {
+      id = val + 1;
+    }
   });
 });
 
@@ -18,6 +22,7 @@ phantom.create("--web-security=no", "--ignore-ssl-errors=yes", { port: 12345 }, 
 exports.index = function(req, res){
   var url = req.query.url;
   var selector = req.query.selector;
+  var trim = req.query.trim || 100;
   
   ph.createPage(function(page) {
     page.open(url, function (status) {
@@ -49,13 +54,12 @@ exports.index = function(req, res){
               if(result.status)
               {
                 page.set('clipRect', { 
-                  top: Math.max(result.top-100, 0), 
-                  left: Math.max(result.left-100, 0), 
-                  width: Math.min(result.width+200, result.maxWidth), 
-                  height: Math.min(result.height+200, result.maxHeight) 
+                  top: Math.max(result.top-trim, 0), 
+                  left: Math.max(result.left-trim, 0), 
+                  width: Math.min(result.width+(trim*2), result.maxWidth), 
+                  height: Math.min(result.height+(trim*2), result.maxHeight) 
                 });
-                page.render("./images/" + id++ + '.png', function(err) {
-                  console.log(err);
+                page.render("./images/" + (id++) + '.png', function(err) {
                   page.close();
                   res.json({url: url, selector: selector, content: result, id: id-1});
                 });
