@@ -1,10 +1,10 @@
 var phantom = require('phantom');
 var fs = require('fs');
 var ph;
-
+var base_path = "./public/images/";
 var id = 0;
 //Iterate over images and increase id based on max
-fs.readdir('./images/', function (err, files) { if (err) throw err;
+fs.readdir(base_path, function (err, files) { if (err) throw err;
   files.forEach( function (file) {
     var val = parseInt(file.split(".")[0]);
     if(!isNaN(val))
@@ -59,7 +59,7 @@ exports.index = function(req, res){
                   width: Math.min(result.width+(trim*2), result.maxWidth), 
                   height: Math.min(result.height+(trim*2), result.maxHeight) 
                 });
-                page.render("./images/" + (id++) + '.png', function(err) {
+                page.render(base_path + (id++) + '.png', function(err) {
                   page.close();
                   res.json({url: url, selector: selector, content: result, id: id-1});
                 });
